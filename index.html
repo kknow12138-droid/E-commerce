@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子商务与新媒体运营完整题库</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --correct: #10b981;
+            --wrong: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            position: relative;
+        }
+
+        /* 顶部导航 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 16px;
+        }
+
+        .title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .progress-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .progress-btn:hover { opacity: 0.9; }
+
+        /* 题目区域 */
+        .question-meta {
+            margin-bottom: 12px;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            margin-right: 8px;
+        }
+        .tag-single { background-color: #3b82f6; } /* 单选蓝 */
+        .tag-multi { background-color: #8b5cf6; }  /* 多选紫 */
+        .tag-judge { background-color: #f59e0b; }  /* 判断橙 */
+
+        .question-text {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        /* 选项列表 */
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .option-item:hover:not(.disabled) {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .option-key {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+            color: var(--text-sub);
+            flex-shrink: 0;
+        }
+
+        /* 选中状态（多选时） */
+        .option-item.selected {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+        .option-item.selected .option-key {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 结果状态 */
+        .option-item.correct {
+            border-color: var(--correct);
+            background-color: #ecfdf5;
+        }
+        .option-item.correct .option-key {
+            background-color: var(--correct);
+            color: white;
+        }
+
+        .option-item.wrong {
+            border-color: var(--wrong);
+            background-color: #fef2f2;
+        }
+        .option-item.wrong .option-key {
+            background-color: var(--wrong);
+            color: white;
+        }
+
+        .disabled { pointer-events: none; }
+
+        /* 底部操作栏 */
+        .footer {
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-prev { background: #e5e7eb; color: var(--text-main); }
+        .btn-next { background: var(--primary-color); color: white; }
+        .btn-submit { background: #10b981; color: white; display: none;} /* 仅多选显示 */
+        
+        /* 解析与提示 */
+        .explanation {
+            margin-top: 20px;
+            padding: 16px;
+            background: #fffbeb;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            display: none;
+            animation: slideDown 0.3s;
+        }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .grid-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .grid-num {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        .grid-num.done-right { background: var(--correct); color: white; }
+        .grid-num.done-wrong { background: var(--wrong); color: white; }
+        .grid-num.current { border: 2px solid var(--primary-color); }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 结算页 */
+        #result-screen { display: none; text-align: center; padding: 40px 0; }
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="quiz-screen">
+    <div class="header">
+        <div class="title">电商与新媒体运营</div>
+        <div class="progress-btn" onclick="openModal()">
+            <span id="progress-text">1 / 104</span>
+            <span>▼</span>
+        </div>
+    </div>
+
+    <div id="question-box">
+        <!-- 题目动态生成 -->
+    </div>
+
+    <div class="explanation" id="explanation">
+        <strong>✅ 正确答案：<span id="correct-text"></span></strong>
+    </div>
+
+    <div class="footer">
+        <button class="btn btn-prev" onclick="prevQ()" id="prev-btn">上一题</button>
+        <button class="btn btn-submit" onclick="submitMulti()" id="submit-btn">确认答案</button>
+        <button class="btn btn-next" onclick="nextQ()" id="next-btn">下一题</button>
+    </div>
+</div>
+
+<div class="container" id="result-screen">
+    <div class="score-circle" id="final-score">0</div>
+    <h2>测试完成</h2>
+    <p>您的答题卡已生成，点击下方按钮复习。</p>
+    <button class="btn btn-next" onclick="location.reload()">重新开始</button>
+</div>
+
+<!-- 选题弹窗 -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-content">
+        <h3 style="margin:0">题目导航</h3>
+        <div class="grid-map" id="question-grid"></div>
+        <button class="btn btn-prev" style="margin-top:20px; width:100%" onclick="closeModal()">关闭</button>
+    </div>
+</div>
+
+<script>
+    // =============================================
+    // 数据结构：
+    // type: 1=单选, 2=判断, 3=多选
+    // c: 正确答案索引. 单选/判断为数字(0=A,1=B...), 多选为数组([0,2]=AC)
+    // =============================================
+    const questions = [
+        // --- 第一部分：基础概念 (单选) ---
+        {id:1, type:1, q:"国际现代商业的最新形式是( )。", opts:["EDI商务","Internet商务","Intranet商务","网站电子商务"], c:1},
+        {id:2, type:1, q:"SCM指的是( )。", opts:["客户关系管理","人力资源管理","供应链管理","企业资源计划"], c:2},
+        {id:3, type:1, q:"我国第一部关于电子商务的综合性法律是( )。", opts:["电子合同法","电子签名法","民法典","电子商务法"], c:3},
+        {id:4, type:1, q:"企业资源计划简称为( )。", opts:["SCM","CRM","MIS","ERP"], c:3},
+        {id:5, type:1, q:"最早的网上B2C公司是( )。", opts:["美国的网上书店亚马逊","英国的网上书店亚马逊","美国的网上商城亚马逊","英国的网上服装店"], c:0},
+        {id:6, type:1, q:"阿里巴巴网站的类型是( )。", opts:["B2G","B2B","C2C","B2C"], c:1},
+        {id:7, type:1, q:"我国最早产生的电子商务模式是( )。", opts:["B2G","B2C","C2C","B2B"], c:1},
+        {id:8, type:1, q:"上下级政府、不同地方政府、不同政府部门之间的电子政务，称为电子政务的( )方式。", opts:["G2G","G2E","G2C","G2B"], c:0},
+        {id:9, type:1, q:"电子数据交换的英文缩写是( )。", opts:["NET","EC","EB","EDI"], c:3},
+        {id:10, type:1, q:"生产类企业网上采购是一种典型的( )电子商务活动。", opts:["B2G","B2C","C2C","B2B"], c:3},
+        {id:11, type:1, q:"电子商务的本质是( )。", opts:["计算机技术","数据库技术","商务的电子化","网络"], c:2},
+        {id:12, type:1, q:"广义上的电子商务对应的标准英文是( )。", opts:["E-Commerce","E-mail","E-Business","E-Internet"], c:2},
+        // --- 第一部分：基础概念 (多选) ---
+        {id:13, type:3, q:"从结构层次的角度看，电子商务的一般框架包括( )，支付服务属于( )。", opts:["网络层","服务支持层","国家政策及法律规范","电子商务应用层","技术标准和网络协议","技术支持层"], c:[0,1,2,3,4,5]},
+        {id:14, type:3, q:"电子政务可按用户分为三类，它们是( )。", opts:["G2C","G2G","G2B","B2B"], c:[0,1,2]},
+        {id:15, type:3, q:"电子商务中的每一笔交易基本都包括( )等。", opts:["信息流","资金流","现金流","物流"], c:[0,1,3]},
+        {id:16, type:3, q:"( )是电子商务概念模型的组成要素。", opts:["交易事务","交易手段","电子商务实体","电子市场"], c:[0,2,3]},
+        {id:17, type:3, q:"《电子商务法》所称的电子商务经营者包括( )。", opts:["电商平台经营者","自建网站经营者","平台内经营者","通过其他网络服务销售商品或者提供服务的经营者"], c:[0,1,2,3]},
+        
+        // --- 第二部分：网络技术 (单选) ---
+        {id:18, type:1, q:"专业或职业化运作的( )往往拥有专业的内容生产团队、流程化的内容生产方式以及日常的运营团队。", opts:["PGC","KOC","KOL","UGC"], c:0},
+        {id:19, type:1, q:"如果网址为 http://www.xxx.edu.cn，则可知这是一个( )网站。", opts:["政府部门","科研机构","教育机构","商业部门"], c:2},
+        {id:20, type:1, q:"IPv4地址中，IP地址分为4段，每段数字的范围是( )。", opts:["0~255","1~256","-127~127","0~128"], c:0},
+        {id:21, type:1, q:"共享经济的基本组成要素不包括( )。", opts:["共享经济主体","共享经济客体","共享经济平台","共享经济模式"], c:3},
+        {id:22, type:1, q:"浏览网页属于Internet提供的( )服务。", opts:["E-mail","Telnet","www","FTP"], c:2},
+        {id:23, type:1, q:"在线问诊的模式不包括( )模式。", opts:["健康教育","视频问诊","导医导药","轻问诊"], c:0},
+        {id:24, type:1, q:"( )对基于UGC的内容电商的描述是正确的。", opts:["以上说法都对","...","...","内容平台通过各种分成或者激励政策吸纳内容创作者加入并分享原创内容..."], c:3},
+        {id:25, type:1, q:"( )是文件传输协议。", opts:["FTP","Telnet","BBS","HTTP"], c:0},
+        {id:26, type:1, q:"浏览Web网页，应使用( )。", opts:["Office 2000","资源管理器","浏览器","电子邮件"], c:2},
+        {id:27, type:1, q:"为了解决地址紧缺问题，IPv6将IP地址空间扩展到了( )。", opts:["32位","64位","128位","256位"], c:2},
+        {id:28, type:1, q:"在浏览器地址栏分别输入域名和IP访问同一网站，此工作由( )完成。", opts:["代理服务器","Web服务器","DNS服务器","FTP服务器"], c:2},
+        {id:29, type:1, q:"在网络环境中，( )提供超级文本服务。", opts:["FTP","Telnet","电子邮件","WWW"], c:3},
+        {id:30, type:1, q:"下面的IP地址中书写正确的是( )。", opts:["142;54;23;123","168.12.150.0","123.32.1.258","145,42,15,50"], c:1},
+        {id:31, type:1, q:"射频识别属于物联网的( )。", opts:["网络层","业务层","感知层","应用层"], c:2},
+        
+        // --- 第二部分：网络技术 (多选) ---
+        {id:32, type:3, q:"物联网的关键技术包括( )等。", opts:["网络通信技术","传感器技术","射频识别技术","定位技术"], c:[0,1,2,3]},
+        {id:33, type:3, q:"物联网的体系结构大致可分为( )三个层次。", opts:["应用层","传感层","网络层","感知层"], c:[0,2,3]},
+        {id:34, type:3, q:"共享平台根据其运营模式可分为( )等类型。", opts:["共享财产平台","知识共享平台","共享交易平台","共享资产管理组织"], c:[1,2,3]},
+        {id:35, type:3, q:"二维码具有( )等特点。", opts:["储存量大","保密性强","追踪性强","成本低"], c:[0,1,2,3]},
+        {id:36, type:3, q:"社交电子商务主要包括( )等模式。", opts:["拼购型","会员分销型","社区团购型","内容型"], c:[0,1,2,3]},
+
+        // --- 第三部分：电商模式 (单选) ---
+        {id:37, type:1, q:"在网上交易流程的设定方面，一个好的电商网站必须做到的是( )。", opts:["使客户操作烦琐但安全","流程有区别","流程简单和方便操作","对客户保留"], c:2},
+        {id:38, type:1, q:"当商品出现质量或其他问题时，商家会要求消费者提供商品的( )。", opts:["商品名称","订单号","商品描述","购买金额"], c:1},
+        {id:39, type:1, q:"阿里巴巴在B2B电子商务交易中扮演的角色是( )。", opts:["交易主体","中介","商业银行","认证中心"], c:1},
+        {id:40, type:1, q:"网店要尽可能给客户留下深刻的第一印象，应将关注点放在( )上。", opts:["漂亮的页面","商店的商标","绚丽的动画","优惠的价格"], c:1},
+        {id:41, type:1, q:"阿里巴巴的电子商务交易模式属于( )。", opts:["企业自有B2B","C2C","B2C","基于第三方平台的B2B"], c:3},
+        {id:42, type:1, q:"每位消费者在B2C电商网站上购物前必须做并且只需做一次的事情是( )。", opts:["登录","结算","购物","注册"], c:3},
+        {id:43, type:1, q:"电商经过几年的高速发展，电商平台的获客成本越来越高，流量红利( )。", opts:["减少","增加","不变","不确定"], c:0},
+        {id:44, type:1, q:"敦煌网的商业模式是( )。", opts:["自营式","平台式","综合服务商","企业应用式"], c:2},
+        {id:45, type:1, q:"淘宝网上每个自然月中，相同买卖家之间评价计分不超过( )分；若( )天内...", opts:["5, 15","5, 10","6, 14","6, 30"], c:2},
+        {id:46, type:1, q:"( )是新零售的前端表象。", opts:["人","数据","场","货"], c:2},
+        {id:47, type:1, q:"新零售的本质是( )。", opts:["渠道一体化","消费者体验中心","经营数字化","对人、货、场三者关系的重构"], c:3},
+        {id:48, type:1, q:"与水平B2B电商平台相比，垂直B2B电商平台的主要优点是( )。", opts:["内容丰富","专业性强","行业全","服务全"], c:1},
+        
+        // --- 第三部分：电商模式 (多选) ---
+        {id:49, type:3, q:"按交易的商品类型分类，C2C电商平台可以分为( )。", opts:["拍卖平台","店铺平台","实物交易平台","智慧交易平台"], c:[2,3]},
+        {id:50, type:3, q:"水平B2B电商平台的特征为( )。", opts:["专业性强","面对某一行业","追求'全'","面对多个行业"], c:[2,3]},
+        {id:51, type:3, q:"根据B2B交易平台构建主体的不同，B2B电子商务可分为( )。", opts:["基于第三方平台的B2B","基于企业自有网站的B2B","水平B2B","垂直B2B"], c:[0,1]},
+        {id:52, type:3, q:"( )等网站属于B2C电子商务购物网站。", opts:["天猫","阿里巴巴","当当网","京东"], c:[0,2,3]},
+        {id:53, type:3, q:"按照面向的行业范围的不同，第三方B2B电商平台可分为( )。", opts:["信息服务型","水平B2B","垂直B2B","交易服务型"], c:[1,2]},
+        {id:54, type:3, q:"拍卖主体主要包括( )。", opts:["拍卖人","竞买人","买受人","委托人"], c:[0,1,2,3]},
+        {id:55, type:3, q:"按B2C网购模式角度来分类，B2C网站可分为( )等。", opts:["连锁购销商城","综合独立商城","网络品牌商城","综合平台商城"], c:[0,1,2,3]},
+        {id:56, type:3, q:"B2C网站的赢利模式包括( )等。", opts:["收取软件使用费","收取交易费","收取广告费","出租虚拟店铺"], c:[1,2,3]},
+
+        // --- 第四部分：运营数据 (单选) ---
+        {id:57, type:1, q:"在淘宝数据中，UV的含义是( )。", opts:["页面浏览数","独立访客数","用户一次访问页面数","关键词搜索次数"], c:1},
+        {id:58, type:1, q:"关于商品基本信息的处理，说法错误的是( )。", opts:["商品描述中只能插入一张图片","重点文字放大强调","长图分解","参数详细"], c:0},
+        {id:59, type:1, q:"淘宝店转化率的计算方法为( )。", opts:["成交总笔数/进店买家总数×100%","产生购买访客/到达访客×100%","进店×成交率...","点击/展现"], c:0},
+        {id:60, type:1, q:"下列关于SKU说法正确的是( )。", opts:["存储方式","库存最小单元","库存数量","库存方法"], c:1},
+        {id:61, type:1, q:"发布商品时标题名称最多可以容纳( )个汉字，( )个字符。", opts:["40;80","30;60","30;50","20;40"], c:1},
+        {id:62, type:1, q:"淘宝网的商品描述不得超过( )字节。", opts:["10000","25000","30000","20000"], c:1},
+        {id:63, type:1, q:"一个淘宝会员最多可以绑定( )支付宝账户。", opts:["不限","1个","2个","3个"], c:1},
+        {id:64, type:1, q:"当设置好定时发布以后，商品页面显示为( )。", opts:["即将开始","立即购买","加入购物车","交易关闭"], c:0},
+        {id:65, type:1, q:"( )的图片适合作为商品主图。", opts:["800×800像素","1920×120","750×600","200×300"], c:0},
+        {id:66, type:1, q:"搜索UV为50，直通车UV为80，成交26笔，正确的是( )。", opts:["获80UV","PV为130","转化率为20%","跳失率10%"], c:2},
+
+        // --- 第四部分：运营数据 (多选) ---
+        {id:67, type:3, q:"在网上开店时，( )环节是必须有的。", opts:["注册","交保证金","实名认证","开通第三方支付工具"], c:[0,2,3]},
+        {id:68, type:3, q:"店铺动态评分包括( )等。", opts:["商品体验","购物体验","物流体验","服务体验"], c:[0,2,3]},
+        {id:69, type:3, q:"下列选项中，( )属于买家自主访问流量。", opts:["购物车进店","淘宝搜索进店","直通车进店","收藏夹进店"], c:[0,3]},
+        {id:70, type:3, q:"关于商品发布技巧，正确的有( )。", opts:["主图色调统一","描述细致","有特点商品推荐","分时段发布"], c:[0,1,2,3]},
+        {id:71, type:3, q:"关于商品描述的说法，( )是错误的。", opts:["必须放大量好评截图","类比体现优势","字号越大越好","必须全是图片"], c:[0,2,3]},
+
+        // --- 第五部分：新媒体运营 (单选) ---
+        {id:72, type:1, q:"( )不属于经典的新媒体四大模块。", opts:["社群运营","产品运营","内容运营","用户运营"], c:0},
+        {id:73, type:1, q:"如果想简单地发送信息进行宣传推广，应选择( )。", opts:["服务号","订阅号","企业微信","朋友圈"], c:1},
+        {id:74, type:1, q:"新媒体运营的转化数据分析指标不包括( )。", opts:["点击次数","付费金额","付费人数","阅读量"], c:3},
+        {id:75, type:1, q:"用( )符号加话题关键词可以加入微博话题的讨论。", opts:["*","号","@","#"], c:2},
+        {id:76, type:1, q:"( )以下不属于新媒体终端。", opts:["广播","数字电视","手机","计算机"], c:0},
+        {id:77, type:1, q:"目前，微信朋友圈字数限制为( )字。", opts:["5000","140","2000","300"], c:2},
+        {id:78, type:1, q:"微信公众平台的订阅号每天(24小时内)可以发送( )条群发消息。", opts:["2条","4条","1条","3条"], c:2},
+        {id:79, type:1, q:"个人不能申请注册( )。", opts:["服务号","微信","小程序","公众号"], c:0},
+        {id:80, type:1, q:"在新媒体平台数据分析中，PV的含义是( )。", opts:["搜索次数","页面浏览量","独立访客","一次访问页数"], c:1},
+
+        // --- 第五部分：新媒体运营 (多选) ---
+        {id:81, type:3, q:"活动运营团队要做好( )两项关键工作...。", opts:["整合","过量投放广告","增强互动性","跨界"], c:[0,3]},
+        {id:82, type:3, q:"产品运营指的是从( )等三个层面连接用户和产品...。", opts:["内容建设","产品促销","活动策划","用户维护"], c:[0,2,3]},
+        {id:83, type:3, q:"微信公众号的类型主要有( )。", opts:["朋友圈","服务号","订阅号","小程序"], c:[1,2,3]},
+        {id:84, type:3, q:"内容运营中'内容'有两层含义，分别是( )。", opts:["内容渠道","内容形式","内容策划","内容归纳"], c:[0,1]},
+        {id:85, type:3, q:"新媒体平台的互动包括( )。", opts:["观看","评论","点赞","转发"], c:[1,2,3]},
+
+        // --- 第六部分：网络营销与广告 (判断) ---
+        {id:86, type:2, q:"网络营销可以代替传统市场营销。", opts:["正确","错误"], c:1},
+        {id:87, type:2, q:"网络营销的出现，使个人目标市场向大规模目标市场转化成为可能。", opts:["正确","错误"], c:1},
+        {id:88, type:2, q:"传统市场营销强调4C策略。", opts:["正确","错误"], c:1},
+        {id:89, type:2, q:"网络营销比传统市场营销更能满足消费者对购物方便的需求。", opts:["正确","错误"], c:0},
+        {id:90, type:2, q:"网络营销实际上就是网上销售。", opts:["正确","错误"], c:1},
+        {id:91, type:2, q:"在线问卷调研属于间接调研。", opts:["正确","错误"], c:1},
+        {id:92, type:2, q:"产品策略是指企业以按照市场规律制定价格和变动价格的方式来实现其营销目标。", opts:["正确","错误"], c:1},
+        {id:93, type:2, q:"CPC是指每千人印象成本。", opts:["正确","错误"], c:1},
+        {id:94, type:2, q:"信息流广告是最适合移动互联网时代的广告形式，也是未来网络广告发展的趋势。", opts:["正确","错误"], c:0},
+        {id:95, type:2, q:"病毒营销就是以传播病毒的方式开展营销。", opts:["正确","错误"], c:1},
+
+        // --- 第六部分：网络营销与广告 (单选/多选) ---
+        {id:96, type:1, q:"追本溯源，网络广告产生于( )。", opts:["美国","英国","法国","中国"], c:0},
+        {id:97, type:1, q:"下列选项中，( )不属于网络营销的职能。", opts:["网站推广","信息发布","网络广告","客户服务"], c:2},
+        {id:98, type:1, q:"以下关于网络营销与传统市场营销的不同点说法错误的是( )。", opts:["目标不同","销售方式不同","决策速度不同","促销力度不同"], c:0},
+        {id:99, type:1, q:"网络市场调研的第一步是( )。", opts:["收集信息","制订调研计划","明确问题与确定调研目标","确定调研内容"], c:2},
+        {id:100, type:1, q:"( )是指企业通过向目标市场提供各种能满足消费需求的有形和无形产品来实现其营销目标。", opts:["定价策略","产品策略","分销策略","促销策略"], c:1},
+        {id:101, type:1, q:"网络营销的主要传播渠道是( )。", opts:["企业→批发商→零售商→消费者","企业→消费者","企业→中间商→消费者","企业→零售商→消费者"], c:1},
+        {id:102, type:1, q:"下列各项中，( )是网络广告。", opts:["横幅广告","路牌广告","灯箱广告","车身广告"], c:0},
+        {id:103, type:3, q:"网络广告中的每千人印象成本收费模式是指( )，每行动成本收费是指( )。", opts:["CPA","CPC","CPM","CPP"], c:[0,2]}, // Modified for multi-select due to double blank
+        {id:104, type:3, q:"下列对网络营销的认识正确的有( )。", opts:["就是网上销售","不仅限于网上","不是孤立存在的","等于电子商务"], c:[1,2]},
+        {id:105, type:3, q:"下列关于网络营销策略的说法正确的有( )。", opts:["宣传和销售渠道统一到了网上","4P转向4P与4C结合","营销策略范围无限收缩","地域和范围概念消失"], c:[0,1]},
+        {id:106, type:3, q:"病毒营销的特性包括( )。", opts:["有价值的产品或服务","成本高","主动传播","几何级数增长"], c:[0,2,3]},
+        {id:107, type:3, q:"二手资料的信息来源有( )。", opts:["内部来源","原始资料","报刊书籍","商业信息"], c:[0,2,3]},
+        {id:108, type:3, q:"调研报告的基本内容包括( )。", opts:["标题","目录","引言","正文","结论","启示及建议"], c:[0,1,2,3,4,5]},
+        {id:109, type:3, q:"产品的整体概念分为( )。", opts:["核心利益","有形产品","期望产品","延伸产品","潜在产品"], c:[0,1,2,3,4]}
+    ];
+
+    // 状态变量
+    let curIndex = 0;
+    const userAnswers = new Array(questions.length).fill(null); // 存储用户答案
+
+    // DOM 元素
+    const dom = {
+        box: document.getElementById('question-box'),
+        progress: document.getElementById('progress-text'),
+        correctText: document.getElementById('correct-text'),
+        explain: document.getElementById('explanation'),
+        prevBtn: document.getElementById('prev-btn'),
+        nextBtn: document.getElementById('next-btn'),
+        submitBtn: document.getElementById('submit-btn'),
+        quizScreen: document.getElementById('quiz-screen'),
+        resultScreen: document.getElementById('result-screen'),
+        finalScore: document.getElementById('final-score'),
+        modal: document.getElementById('modal'),
+        grid: document.getElementById('question-grid')
+    };
+
+    // 初始化
+    function init() {
+        loadQuestion();
+        updateProgress();
+    }
+
+    // 加载题目
+    function loadQuestion() {
+        const q = questions[curIndex];
+        const typeLabels = {1:"单选题", 2:"判断题", 3:"多选题"};
+        const tagClass = {1:"tag-single", 2:"tag-judge", 3:"tag-multi"};
+        
+        let html = `
+            <div class="question-meta">
+                <span class="tag ${tagClass[q.type]}">${typeLabels[q.type]}</span>
+            </div>
+            <div class="question-text">${q.q}</div>
+            <div class="options-grid">
+        `;
+
+        const labels = q.type === 2 ? ['√', '×'] : ['A','B','C','D','E','F'];
+        
+        q.opts.forEach((opt, idx) => {
+            html += `
+                <div class="option-item" id="opt-${idx}" onclick="handleSelect(${idx})">
+                    <div class="option-key">${labels[idx]}</div>
+                    <div>${opt}</div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        dom.box.innerHTML = html;
+
+        // 按钮状态
+        dom.prevBtn.disabled = curIndex === 0;
+        dom.nextBtn.innerText = curIndex === questions.length - 1 ? "查看结果" : "下一题";
+        
+        // 恢复历史状态
+        if (userAnswers[curIndex] !== null) {
+            restoreState(q);
+        } else {
+            resetState(q);
+        }
+    }
+
+    // 处理选择
+    window.handleSelect = (idx) => {
+        const q = questions[curIndex];
+        
+        // 如果已提交，禁止修改
+        if (userAnswers[curIndex] !== null && q.type !== 3) return; 
+        if (userAnswers[curIndex] !== null && q.type === 3 && dom.submitBtn.style.display === 'none') return;
+
+        const el = document.getElementById(`opt-${idx}`);
+
+        if (q.type === 3) {
+            // 多选逻辑：切换选中状态
+            el.classList.toggle('selected');
+        } else {
+            // 单选/判断逻辑：立即结算
+            userAnswers[curIndex] = idx;
+            showAnswer(q, idx);
+        }
+    };
+
+    // 提交多选答案
+    window.submitMulti = () => {
+        const q = questions[curIndex];
+        const selectedEls = document.querySelectorAll('.option-item.selected');
+        const selectedIndices = Array.from(selectedEls).map(el => parseInt(el.id.split('-')[1])).sort((a,b)=>a-b);
+        
+        if (selectedIndices.length === 0) return alert("请至少选择一个选项");
+
+        userAnswers[curIndex] = selectedIndices;
+        showAnswer(q, selectedIndices);
+    };
+
+    // 显示答案与解析
+    function showAnswer(q, userAns) {
+        const isMulti = q.type === 3;
+        const correct = q.c;
+        const labels = q.type === 2 ? ['正确','错误'] : ['A','B','C','D','E','F'];
+
+        // 禁用所有选项交互
+        document.querySelectorAll('.option-item').forEach(el => el.classList.add('disabled'));
+
+        // 判定对错
+        let isRight = false;
+        if (isMulti) {
+            isRight = JSON.stringify(userAns) === JSON.stringify(correct);
+            dom.submitBtn.style.display = 'none';
+        } else {
+            isRight = userAns === correct;
+        }
+
+        // 渲染样式
+        const opts = document.querySelectorAll('.option-item');
+        if (isRight) {
+            if (isMulti) {
+                userAns.forEach(i => opts[i].classList.add('correct'));
+            } else {
+                opts[userAns].classList.add('correct');
+            }
+        } else {
+            // 标红错选
+            if (isMulti) {
+                userAns.forEach(i => opts[i].classList.add('wrong'));
+                correct.forEach(i => opts[i].classList.add('correct')); // 显示正确
+            } else {
+                opts[userAns].classList.add('wrong');
+                opts[correct].classList.add('correct');
+            }
+        }
+
+        // 显示解析栏
+        let ansText = "";
+        if (isMulti) {
+            ansText = correct.map(i => labels[i]).join(", ");
+        } else {
+            ansText = labels[correct];
+        }
+        dom.correctText.innerText = ansText;
+        dom.explain.style.display = 'block';
+    }
+
+    // 恢复题目状态（用于翻页回看）
+    function restoreState(q) {
+        const ans = userAnswers[curIndex];
+        showAnswer(q, ans);
+        
+        // 隐藏提交按钮
+        if (q.type === 3) dom.submitBtn.style.display = 'none';
+    }
+
+    // 重置题目状态（新题）
+    function resetState(q) {
+        dom.explain.style.display = 'none';
+        if (q.type === 3) {
+            dom.submitBtn.style.display = 'block';
+        } else {
+            dom.submitBtn.style.display = 'none';
+        }
+    }
+
+    // 翻页控制
+    window.nextQ = () => {
+        if (curIndex < questions.length - 1) {
+            curIndex++;
+            loadQuestion();
+            updateProgress();
+        } else {
+            finishQuiz();
+        }
+    };
+
+    window.prevQ = () => {
+        if (curIndex > 0) {
+            curIndex--;
+            loadQuestion();
+            updateProgress();
+        }
+    };
+
+    function updateProgress() {
+        dom.progress.innerText = `${curIndex + 1} / ${questions.length}`;
+    }
+
+    // 结算
+    function finishQuiz() {
+        let score = 0;
+        questions.forEach((q, i) => {
+            const ans = userAnswers[i];
+            if (ans === null) return;
+            if (q.type === 3) {
+                if (JSON.stringify(ans) === JSON.stringify(q.c)) score++;
+            } else {
+                if (ans === q.c) score++;
+            }
+        });
+
+        dom.quizScreen.style.display = 'none';
+        dom.resultScreen.style.display = 'block';
+        dom.finalScore.innerText = score;
+    }
+
+    // 弹窗逻辑
+    window.openModal = () => {
+        let html = '';
+        questions.forEach((q, i) => {
+            let cls = 'grid-num';
+            if (i === curIndex) cls += ' current';
+            
+            const ans = userAnswers[i];
+            if (ans !== null) {
+                let isRight = false;
+                if (q.type === 3) isRight = JSON.stringify(ans) === JSON.stringify(q.c);
+                else isRight = ans === q.c;
+                cls += isRight ? ' done-right' : ' done-wrong';
+            }
+            
+            html += `<div class="${cls}" onclick="jumpTo(${i})">${i+1}</div>`;
+        });
+        dom.grid.innerHTML = html;
+        dom.modal.style.display = 'flex';
+    };
+
+    window.closeModal = () => {
+        dom.modal.style.display = 'none';
+    };
+
+    window.jumpTo = (idx) => {
+        curIndex = idx;
+        loadQuestion();
+        updateProgress();
+        closeModal();
+    };
+
+    // 启动
+    init();
+
+</script>
+</body>
+</html>
